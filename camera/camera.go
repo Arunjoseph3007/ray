@@ -12,13 +12,14 @@ import (
 )
 
 type Camera struct {
-	center        vec.Point
-	pixel00_loc   vec.Point
-	pixel_delta_u vec.Vec3
-	pixel_delta_v vec.Vec3
-	AspectRatio   float64
-	Width         int
-	Height        int
+	center            vec.Point
+	pixel00_loc       vec.Point
+	pixel_delta_u     vec.Vec3
+	pixel_delta_v     vec.Vec3
+	AspectRatio       float64
+	Width             int
+	Height            int
+	samples_per_pixel int
 }
 
 var WHITE = vec.New(1, 1, 1)
@@ -50,6 +51,7 @@ func (c *Camera) Initialize() {
 	c.AspectRatio = 16.0 / 9.0
 	c.Width = 200
 	c.Height = int(float64(c.Width) / c.AspectRatio)
+	c.samples_per_pixel = 4
 
 	focal_length := 1.0
 	viewport_height := 2.0
@@ -77,25 +79,39 @@ func (c *Camera) Initialize() {
 	)
 }
 
+func (c *Camera) pixel_sample_sq() vec.Vec3 {
+	return *vec.Add(
+		*vec.MulScalar(c.pixel_delta_u, utils.Rand(-0.3, .3)),
+		*vec.MulScalar(c.pixel_delta_v, utils.Rand(-0.3, .3)),
+	)
+}
+
+func (c *Camera) get_ray(center vec.Point) ray.Ray {
+	sample := vec.Add(center, c.pixel_sample_sq())
+	direction := vec.Sub(*sample, c.center)
+
+	return *ray.New(c.center, *direction)
+}
+
 func (c *Camera) Render(world hit.HitList) {
 	out := fmt.Sprintf("P3\n%d %d\n255\n", c.Width, c.Height)
 
 	for j := 0; j < c.Height; j++ {
 		fmt.Printf("\rRemaining: %f /", float64(j)/float64(c.Height)*100)
 		for i := 0; i < c.Width; i++ {
+			color := vec.New(0, 0, 0)
 			pixel_center := *vec.Add(
 				c.pixel00_loc,
 				*vec.MulScalar(c.pixel_delta_u, float64(i)),
 				*vec.MulScalar(c.pixel_delta_v, float64(j)),
 			)
-			ray_direction := vec.Sub(
-				pixel_center,
-				c.center,
-			)
-			r := ray.New(c.center, *ray_direction)
+			for i := 0; i < c.samples_per_pixel; i++ {
+				r := c.get_ray(pixel_center)
 
-			pixel_color := c.ray_color(*r, world)
-			out += pixel_color.ToClrStr()
+				color.Add(c.ray_color(r, world))
+			}
+			color.DivScalar(float64(c.samples_per_pixel))
+			out += color.ToClrStr()
 		}
 	}
 

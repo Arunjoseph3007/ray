@@ -12,7 +12,6 @@ func main() {
 		Center: *vec.New(0, 0, -1),
 		Radius: .5,
 	})
-
 	world.Add(hit.Shpere{
 		Center: *vec.New(0, -100.5, -1),
 		Radius: 100,
