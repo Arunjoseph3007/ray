@@ -33,11 +33,10 @@ func (v Vec3) Negative() *Vec3 {
 	}
 }
 
-func (v *Vec3) Add(n Vec3) *Vec3 {
+func (v *Vec3) Add(n Vec3) {
 	v.e[0] += n.e[0]
 	v.e[1] += n.e[1]
 	v.e[2] += n.e[2]
-	return v
 }
 
 func (v *Vec3) Sub(n Vec3) {
@@ -65,7 +64,11 @@ func (v *Vec3) Length() float64 {
 }
 
 func (v *Vec3) ToStr() string {
-	return fmt.Sprintf("%d %d %d\n", int(v.e[0]), int(v.e[1]), int(v.e[2]))
+	return fmt.Sprintf("%f %f %f ", v.e[0], v.e[1], v.e[2])
+}
+
+func (v *Vec3) ToClrStr() string {
+	return fmt.Sprintf("%d %d %d\n", int(v.e[0]*255.99), int(v.e[1]*255.99), int(v.e[2]*255.99))
 }
 
 func (v *Vec3) Print() {
