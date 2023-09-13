@@ -25,17 +25,13 @@ type Camera struct {
 var WHITE = vec.New(1, 1, 1)
 var SKY_BLUE = vec.New(0.5, 0.7, 1)
 
-func (c *Camera) ray_color(r ray.Ray, h hit.HitList) vec.Color {
+func (c *Camera) ray_color(r *ray.Ray, h hit.HitList) vec.Color {
 	hit_data := hit.HitData{}
 
-	if h.Hit(r, utils.NewInterval(0, math.Inf(1)), &hit_data) {
-		return *vec.MulScalar(
-			*vec.Add(
-				hit_data.Normal,
-				*vec.New(1, 1, 1),
-			),
-			0.5,
-		)
+	if h.Hit(*r, utils.NewInterval(0, math.Inf(1)), &hit_data) {
+		r.Direction = vec.RandOnHemishpere(hit_data.Normal)
+		r.Origin = hit_data.Point
+		return *vec.DivScalar(c.ray_color(r, h), 2)
 	}
 
 	dir := vec.UnitVec(r.Direction)
@@ -49,7 +45,7 @@ func (c *Camera) ray_color(r ray.Ray, h hit.HitList) vec.Color {
 
 func (c *Camera) Initialize() {
 	c.AspectRatio = 16.0 / 9.0
-	c.Width = 200
+	c.Width = 400
 	c.Height = int(float64(c.Width) / c.AspectRatio)
 	c.samples_per_pixel = 4
 
@@ -108,7 +104,7 @@ func (c *Camera) Render(world hit.HitList) {
 			for i := 0; i < c.samples_per_pixel; i++ {
 				r := c.get_ray(pixel_center)
 
-				color.Add(c.ray_color(r, world))
+				color.Add(c.ray_color(&r, world))
 			}
 			color.DivScalar(float64(c.samples_per_pixel))
 			out += color.ToClrStr()

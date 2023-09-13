@@ -1,5 +1,7 @@
 package vec
 
+import "ray-tracing/utils"
+
 func Negative(a Vec3) *Vec3 {
 	return &Vec3{
 		e: [3]float64{-a.e[0], -a.e[1], -a.e[2]},
@@ -61,4 +63,25 @@ func Dot(a, b Vec3) float64 {
 
 func UnitVec(v Vec3) *Vec3 {
 	return MulScalar(v, 1/v.Length())
+}
+
+func Random(min, max float64) Vec3 {
+	return *New(
+		utils.Rand(min, max),
+		utils.Rand(min, max),
+		utils.Rand(min, max),
+	)
+}
+
+func RandomUnitVec() Vec3 {
+	return *UnitVec(Random(-1, 1))
+}
+
+func RandOnHemishpere(normal Vec3) Vec3 {
+	rand_vec := RandomUnitVec()
+	if Dot(rand_vec, normal) < 0 {
+		return *Negative(rand_vec)
+	} else {
+		return rand_vec
+	}
 }
