@@ -3,6 +3,7 @@ package hit
 import (
 	"math"
 	"ray-tracing/ray"
+	"ray-tracing/utils"
 	"ray-tracing/vec"
 )
 
@@ -11,7 +12,7 @@ type Shpere struct {
 	Radius float64
 }
 
-func (s Shpere) Hit(r ray.Ray, min float64, max float64, ret *HitData) bool {
+func (s Shpere) Hit(r ray.Ray, limit utils.Interval, ret *HitData) bool {
 	oc := vec.Sub(r.Origin, s.Center)
 	a := r.Direction.LengthSquare()
 	half_b := vec.Dot(r.Direction, *oc)
@@ -25,9 +26,9 @@ func (s Shpere) Hit(r ray.Ray, min float64, max float64, ret *HitData) bool {
 	discSqrt := math.Sqrt(dicriminant)
 
 	root := (-half_b - discSqrt) / a
-	if root <= min || max <= root {
+	if root <= limit.Min || limit.Max <= root {
 		root = (-half_b + discSqrt) / a
-		if root <= min || max <= root {
+		if root <= limit.Min || limit.Max <= root {
 			return false
 		}
 	}

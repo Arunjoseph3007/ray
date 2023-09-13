@@ -2,6 +2,7 @@ package hit
 
 import (
 	"ray-tracing/ray"
+	"ray-tracing/utils"
 	"ray-tracing/vec"
 )
 
@@ -17,5 +18,5 @@ func (h *HitData) SetFrontFace(r ray.Ray, out_normal vec.Vec3) {
 }
 
 type Hitable interface {
-	Hit(r ray.Ray, min float64, max float64, ret *HitData) bool
+	Hit(r ray.Ray, limit utils.Interval, ret *HitData) bool
 }

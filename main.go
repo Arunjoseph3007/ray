@@ -7,6 +7,7 @@ import (
 	"os"
 	"ray-tracing/hit"
 	"ray-tracing/ray"
+	"ray-tracing/utils"
 	"ray-tracing/vec"
 )
 
@@ -16,7 +17,7 @@ var BLUE = vec.New(0.5, 0.7, 1)
 func ray_color(r ray.Ray, h hit.HitList) vec.Color {
 	hit_data := hit.HitData{}
 
-	if h.Hit(r, 0, math.Inf(1), &hit_data) {
+	if h.Hit(r, utils.NewInterval(0, math.Inf(1)), &hit_data) {
 		return *vec.MulScalar(
 			*vec.Add(
 				hit_data.Normal,
