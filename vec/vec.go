@@ -68,7 +68,10 @@ func (v *Vec3) ToStr() string {
 }
 
 func (v *Vec3) ToClrStr() string {
-	return fmt.Sprintf("%d %d %d\n", int(v.e[0]*255.99), int(v.e[1]*255.99), int(v.e[2]*255.99))
+	x := int(math.Sqrt(v.e[0]) * 255.99)
+	y := int(math.Sqrt(v.e[1]) * 255.99)
+	z := int(math.Sqrt(v.e[2]) * 255.99)
+	return fmt.Sprintf("%d %d %d\n", x, y, z)
 }
 
 func (v *Vec3) Print() {

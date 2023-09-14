@@ -8,8 +8,9 @@ import (
 )
 
 type Shpere struct {
-	Center vec.Point
-	Radius float64
+	Center   vec.Point
+	Radius   float64
+	Material Material
 }
 
 func (s Shpere) Hit(r ray.Ray, limit utils.Interval, ret *HitData) bool {
@@ -39,6 +40,7 @@ func (s Shpere) Hit(r ray.Ray, limit utils.Interval, ret *HitData) bool {
 	ret.T = root
 	ret.Point = p
 	ret.Normal = *out_norm
+	ret.Material = s.Material
 	ret.SetFrontFace(r, *out_norm)
 
 	return true

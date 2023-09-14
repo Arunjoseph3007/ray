@@ -25,17 +25,19 @@ var WHITE = vec.New(1, 1, 1)
 var BLACK = vec.New(0, 0, 0)
 var SKY_BLUE = vec.New(0.5, 0.7, 1)
 
-func (c *Camera) ray_color(r *ray.Ray, h hit.HitList, depth int) vec.Color {
+func (c *Camera) ray_color(r *ray.Ray, world hit.HitList, depth int) vec.Color {
 	hit_data := hit.HitData{}
 
 	if depth == 0 {
 		return *BLACK
 	}
 
-	if h.Hit(*r, utils.NewInterval(0.01, math.Inf(1)), &hit_data) {
-		r.Direction = vec.RandOnHemishpere(hit_data.Normal)
-		r.Origin = hit_data.Point
-		return *vec.DivScalar(c.ray_color(r, h, depth-1), 2)
+	if world.Hit(*r, utils.NewInterval(0.01, math.Inf(1)), &hit_data) {
+		did_scatter, atten := hit_data.Material.Scatter(r, &hit_data)
+		if did_scatter {
+			return *vec.Mul(atten, c.ray_color(r, world, depth-1))
+		}
+		return *BLACK
 	}
 
 	dir := vec.UnitVec(r.Direction)
@@ -87,13 +89,6 @@ func (c *Camera) pixel_sample_sq() vec.Vec3 {
 	)
 }
 
-func (c *Camera) get_ray(center vec.Point) ray.Ray {
-	sample := vec.Add(center, c.pixel_sample_sq())
-	direction := vec.Sub(*sample, c.center)
-
-	return *ray.New(c.center, *direction)
-}
-
 func (c *Camera) Render(world hit.HitList) {
 	fmt.Println("P3")
 	fmt.Println(c.Width, c.Height)
@@ -108,7 +103,10 @@ func (c *Camera) Render(world hit.HitList) {
 				*vec.MulScalar(c.pixel_delta_v, float64(j)),
 			)
 			for i := 0; i < c.samples_per_pixel; i++ {
-				r := c.get_ray(pixel_center)
+				sample := vec.Add(pixel_center, c.pixel_sample_sq())
+				direction := vec.Sub(*sample, c.center)
+				r := *ray.New(c.center, *direction)
+				// r := c.get_ray(pixel_center)
 
 				color.Add(c.ray_color(&r, world, c.max_depth))
 			}

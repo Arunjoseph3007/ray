@@ -10,6 +10,7 @@ type HitData struct {
 	Point      vec.Point
 	Normal     vec.Vec3
 	T          float64
+	Material   Material
 	front_face bool
 }
 

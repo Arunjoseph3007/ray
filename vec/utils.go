@@ -23,6 +23,21 @@ func Add(vectors ...Vec3) *Vec3 {
 	}
 }
 
+func Mul(vectors ...Vec3) *Vec3 {
+	x := 1.0
+	y := 1.0
+	z := 1.0
+
+	for _, v := range vectors {
+		x *= v.e[0]
+		y *= v.e[1]
+		z *= v.e[2]
+	}
+	return &Vec3{
+		e: [3]float64{x, y, z},
+	}
+}
+
 func Sub(a, b Vec3) *Vec3 {
 	return &Vec3{
 		e: [3]float64{
@@ -63,6 +78,13 @@ func Dot(a, b Vec3) float64 {
 
 func UnitVec(v Vec3) *Vec3 {
 	return MulScalar(v, 1/v.Length())
+}
+
+func Reflect(v Vec3, normal Vec3) Vec3 {
+	return *Sub(
+		v,
+		*MulScalar(normal, 2*Dot(v, normal)),
+	)
 }
 
 func Random(min, max float64) Vec3 {
