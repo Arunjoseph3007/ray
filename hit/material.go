@@ -34,3 +34,21 @@ func (m *Metal) Scatter(ray *ray.Ray, rec *HitData) (bool, vec.Color) {
 	ray.Origin = rec.Point
 	return true, m.Albedo
 }
+
+type Dielectric struct {
+	RefractIndex float64
+}
+
+func (d *Dielectric) Scatter(ray *ray.Ray, rec *HitData) (bool, vec.Color) {
+	refraction_ratio := d.RefractIndex
+	if rec.front_face {
+		refraction_ratio = 1.0 / refraction_ratio
+	}
+
+	unit_direction := *vec.UnitVec(ray.Direction)
+	refracted := vec.Refract(unit_direction, rec.Normal, refraction_ratio)
+
+	ray.Direction = refracted
+	ray.Origin = rec.Point
+	return true, *vec.New(1, 1, 1)
+}

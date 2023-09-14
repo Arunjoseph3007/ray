@@ -51,7 +51,7 @@ func (c *Camera) ray_color(r *ray.Ray, world hit.HitList, depth int) vec.Color {
 
 func (c *Camera) Initialize() {
 	c.AspectRatio = 16.0 / 9.0
-	c.Width = 400
+	c.Width = 800
 	c.Height = int(float64(c.Width) / c.AspectRatio)
 	c.samples_per_pixel = 4
 	c.max_depth = 20

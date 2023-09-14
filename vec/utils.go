@@ -1,6 +1,9 @@
 package vec
 
-import "ray-tracing/utils"
+import (
+	"math"
+	"ray-tracing/utils"
+)
 
 func Negative(a Vec3) *Vec3 {
 	return &Vec3{
@@ -85,6 +88,19 @@ func Reflect(v Vec3, normal Vec3) Vec3 {
 		v,
 		*MulScalar(normal, 2*Dot(v, normal)),
 	)
+}
+
+func Refract(v Vec3, normal Vec3, refract_index float64) Vec3 {
+	cos_theta := math.Min(Dot(normal, *Negative(v)), 1)
+	r_perp := MulScalar(
+		*Add(
+			v,
+			*MulScalar(normal, cos_theta),
+		),
+		refract_index,
+	)
+	r_parllel := MulScalar(normal, -math.Sqrt(1-v.LengthSquare()))
+	return *Add(*r_perp, *r_parllel)
 }
 
 func Random(min, max float64) Vec3 {
