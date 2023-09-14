@@ -27,7 +27,10 @@ type Metal struct {
 
 func (m *Metal) Scatter(ray *ray.Ray, rec *HitData) (bool, vec.Color) {
 	scatter_dir := vec.Reflect(*vec.UnitVec(ray.Direction), rec.Normal)
-	ray.Direction = scatter_dir
+	ray.Direction = *vec.Add(
+		scatter_dir,
+		*vec.MulScalar(vec.RandomUnitVec(), m.Fuzz),
+	)
 	ray.Origin = rec.Point
 	return true, m.Albedo
 }
