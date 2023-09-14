@@ -19,6 +19,9 @@ type Camera struct {
 	Height            int
 	samples_per_pixel int
 	max_depth         int
+	vfov              float64
+
+	u, v, w vec.Vec3
 }
 
 var WHITE = vec.New(1, 1, 1)
@@ -49,39 +52,6 @@ func (c *Camera) ray_color(r *ray.Ray, world hit.HitList, depth int) vec.Color {
 	)
 }
 
-func (c *Camera) Initialize() {
-	c.AspectRatio = 16.0 / 9.0
-	c.Width = 800
-	c.Height = int(float64(c.Width) / c.AspectRatio)
-	c.samples_per_pixel = 4
-	c.max_depth = 20
-
-	focal_length := 1.0
-	viewport_height := 2.0
-	viewport_width := viewport_height * float64(c.Width) / float64(c.Height)
-	c.center = *vec.New(0, 0, 0)
-
-	viewport_u := vec.New(viewport_width, 0, 0)
-	viewport_v := vec.New(0, -viewport_height, 0)
-
-	c.pixel_delta_u = *vec.DivScalar(*viewport_u, float64(c.Width))
-	c.pixel_delta_v = *vec.DivScalar(*viewport_v, float64(c.Height))
-
-	viewport_up_left := vec.Sub(
-		c.center,
-		*vec.Add(
-			*vec.New(0, 0, focal_length),
-			*vec.DivScalar(*viewport_u, 2),
-			*vec.DivScalar(*viewport_v, 2),
-		),
-	)
-	c.pixel00_loc = *vec.Add(
-		*viewport_up_left,
-		*vec.DivScalar(c.pixel_delta_u, 2),
-		*vec.DivScalar(c.pixel_delta_v, 2),
-	)
-}
-
 func (c *Camera) pixel_sample_sq() vec.Vec3 {
 	return *vec.Add(
 		*vec.MulScalar(c.pixel_delta_u, utils.Rand(-0.3, .3)),
@@ -106,7 +76,6 @@ func (c *Camera) Render(world hit.HitList) {
 				sample := vec.Add(pixel_center, c.pixel_sample_sq())
 				direction := vec.Sub(*sample, c.center)
 				r := *ray.New(c.center, *direction)
-				// r := c.get_ray(pixel_center)
 
 				color.Add(c.ray_color(&r, world, c.max_depth))
 			}
@@ -114,4 +83,50 @@ func (c *Camera) Render(world hit.HitList) {
 			fmt.Print(color.ToClrStr())
 		}
 	}
+}
+
+func New(width int, aspectRatio float64, samplePerPixel int, maxDepth int) Camera {
+	c := Camera{}
+
+	c.AspectRatio = aspectRatio
+	c.Width = width
+	c.Height = int(float64(c.Width) / c.AspectRatio)
+	c.samples_per_pixel = samplePerPixel
+	c.max_depth = maxDepth
+
+	return c
+}
+
+func (c *Camera) Adjust(angle float64, from, at, viewup vec.Vec3) {
+	c.vfov = angle
+
+	c.center = from
+	focal_length := vec.Sub(at, from).Length()
+	rad := c.vfov * math.Pi / 180
+	viewport_height := math.Tan(rad/2) * 2 * focal_length
+	viewport_width := viewport_height * float64(c.Width) / float64(c.Height)
+
+	c.w = *vec.UnitVec(*vec.Sub(from, at))
+	c.u = *vec.UnitVec(*vec.Cross(c.w, viewup))
+	c.v = *vec.Cross(c.u, c.w)
+
+	viewport_u := vec.MulScalar(c.u, viewport_width)
+	viewport_v := vec.MulScalar(*vec.Negative(c.v), viewport_height)
+
+	c.pixel_delta_u = *vec.DivScalar(*viewport_u, float64(c.Width))
+	c.pixel_delta_v = *vec.DivScalar(*viewport_v, float64(c.Height))
+
+	viewport_up_left := vec.Sub(
+		c.center,
+		*vec.Add(
+			*vec.MulScalar(c.w, focal_length),
+			*vec.MulScalar(*viewport_u, .5),
+			*vec.MulScalar(*viewport_v, .5),
+		),
+	)
+	c.pixel00_loc = *vec.Add(
+		*viewport_up_left,
+		*vec.DivScalar(c.pixel_delta_u, 2),
+		*vec.DivScalar(c.pixel_delta_v, 2),
+	)
 }
