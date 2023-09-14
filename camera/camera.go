@@ -2,9 +2,7 @@ package camera
 
 import (
 	"fmt"
-	"log"
 	"math"
-	"os"
 	"ray-tracing/hit"
 	"ray-tracing/ray"
 	"ray-tracing/utils"
@@ -20,18 +18,24 @@ type Camera struct {
 	Width             int
 	Height            int
 	samples_per_pixel int
+	max_depth         int
 }
 
 var WHITE = vec.New(1, 1, 1)
+var BLACK = vec.New(0, 0, 0)
 var SKY_BLUE = vec.New(0.5, 0.7, 1)
 
-func (c *Camera) ray_color(r *ray.Ray, h hit.HitList) vec.Color {
+func (c *Camera) ray_color(r *ray.Ray, h hit.HitList, depth int) vec.Color {
 	hit_data := hit.HitData{}
 
-	if h.Hit(*r, utils.NewInterval(0, math.Inf(1)), &hit_data) {
+	if depth == 0 {
+		return *BLACK
+	}
+
+	if h.Hit(*r, utils.NewInterval(0.01, math.Inf(1)), &hit_data) {
 		r.Direction = vec.RandOnHemishpere(hit_data.Normal)
 		r.Origin = hit_data.Point
-		return *vec.DivScalar(c.ray_color(r, h), 2)
+		return *vec.DivScalar(c.ray_color(r, h, depth-1), 2)
 	}
 
 	dir := vec.UnitVec(r.Direction)
@@ -48,6 +52,7 @@ func (c *Camera) Initialize() {
 	c.Width = 400
 	c.Height = int(float64(c.Width) / c.AspectRatio)
 	c.samples_per_pixel = 4
+	c.max_depth = 20
 
 	focal_length := 1.0
 	viewport_height := 2.0
@@ -90,10 +95,11 @@ func (c *Camera) get_ray(center vec.Point) ray.Ray {
 }
 
 func (c *Camera) Render(world hit.HitList) {
-	out := fmt.Sprintf("P3\n%d %d\n255\n", c.Width, c.Height)
+	fmt.Println("P3")
+	fmt.Println(c.Width, c.Height)
+	fmt.Println("255")
 
 	for j := 0; j < c.Height; j++ {
-		fmt.Printf("\rRemaining: %f /", float64(j)/float64(c.Height)*100)
 		for i := 0; i < c.Width; i++ {
 			color := vec.New(0, 0, 0)
 			pixel_center := *vec.Add(
@@ -104,23 +110,10 @@ func (c *Camera) Render(world hit.HitList) {
 			for i := 0; i < c.samples_per_pixel; i++ {
 				r := c.get_ray(pixel_center)
 
-				color.Add(c.ray_color(&r, world))
+				color.Add(c.ray_color(&r, world, c.max_depth))
 			}
 			color.DivScalar(float64(c.samples_per_pixel))
-			out += color.ToClrStr()
+			fmt.Print(color.ToClrStr())
 		}
 	}
-
-	file, err := os.Create("image.ppm")
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	_, err2 := file.WriteString(out)
-	if err2 != nil {
-		log.Fatal(err2)
-	}
-
-	fmt.Println("Done!")
 }

@@ -73,8 +73,17 @@ func Random(min, max float64) Vec3 {
 	)
 }
 
+func RandomInUnitSphere() Vec3 {
+	for {
+		p := Random(-1, 1)
+		if p.LengthSquare() < 1 {
+			return p
+		}
+	}
+}
+
 func RandomUnitVec() Vec3 {
-	return *UnitVec(Random(-1, 1))
+	return *UnitVec(RandomInUnitSphere())
 }
 
 func RandOnHemishpere(normal Vec3) Vec3 {
