@@ -124,6 +124,15 @@ func RandomInUnitSphere() Vec3 {
 	}
 }
 
+func RandomInUnitDisk() Vec3 {
+	for {
+		p := *New(utils.Rand(-1, 1), utils.Rand(-1, 1), 0)
+		if p.LengthSquare() < 1 {
+			return p
+		}
+	}
+}
+
 func RandomUnitVec() Vec3 {
 	return *UnitVec(RandomInUnitSphere())
 }

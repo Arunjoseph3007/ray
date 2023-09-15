@@ -35,13 +35,6 @@ var WHITE = vec.New(1, 1, 1)
 var BLACK = vec.New(0, 0, 0)
 var SKY_BLUE = vec.New(0.5, 0.7, 1)
 
-func (c *Camera) random_point_in_lens() vec.Point {
-	return *vec.Add(
-		c.center,
-		*vec.New(utils.Rand(0, .5), utils.Rand(0, .5), 0),
-	)
-}
-
 func (c *Camera) ray_color(r *ray.Ray, world hit.HitList, depth int) vec.Color {
 	hit_data := hit.HitData{}
 
@@ -90,11 +83,11 @@ func (c *Camera) Render(world hit.HitList) {
 				sample := vec.Add(pixel_center, c.pixel_sample_sq())
 				ray_origin := vec.Add(
 					c.center,
-					// *vec.MulScalar(c.defocus_disk_u, utils.Rand(-.5, .5)),
-					// *vec.MulScalar(c.defocus_disk_v, utils.Rand(-.5, .5)),
+					*vec.MulScalar(c.defocus_disk_u, utils.Rand(-.5, .5)),
+					*vec.MulScalar(c.defocus_disk_v, utils.Rand(-.5, .5)),
 				)
 				direction := vec.Sub(*sample, *ray_origin)
-				r := *ray.New(c.center, *direction)
+				r := *ray.New(*ray_origin, *direction)
 
 				color.Add(c.ray_color(&r, world, c.max_depth))
 			}
@@ -113,8 +106,8 @@ func New(width int, aspectRatio float64, samplePerPixel int, maxDepth int) Camer
 	c.samples_per_pixel = samplePerPixel
 	c.max_depth = maxDepth
 
-	c.DefocusAngle = 10
-	c.FocusDist = 3.4
+	c.DefocusAngle = 0.6
+	c.FocusDist = 10
 
 	return c
 }
@@ -123,7 +116,6 @@ func (c *Camera) Adjust(angle float64, from, at, viewup vec.Vec3) {
 	c.vfov = angle
 
 	c.center = from
-	// focal_length := vec.Sub(at, from).Length()
 	rad := c.vfov * math.Pi / 180
 	viewport_height := math.Tan(rad/2) * 2 * c.FocusDist
 	viewport_width := viewport_height * float64(c.Width) / float64(c.Height)
@@ -153,7 +145,8 @@ func (c *Camera) Adjust(angle float64, from, at, viewup vec.Vec3) {
 	)
 
 	// Calculate the camera defocus disk basis vectors.
-	defocus_radius := c.FocusDist * math.Tan((c.DefocusAngle/2)*math.Pi/180)
+	defocus_rad := c.DefocusAngle * math.Pi / 180
+	defocus_radius := c.FocusDist * math.Tan(defocus_rad/2)
 	c.defocus_disk_u = *vec.MulScalar(c.u, defocus_radius)
 	c.defocus_disk_v = *vec.MulScalar(c.v, defocus_radius)
 }
