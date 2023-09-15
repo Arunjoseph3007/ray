@@ -2,6 +2,7 @@ package hit
 
 import (
 	"math"
+	"math/rand"
 	"ray-tracing/ray"
 	"ray-tracing/vec"
 )
@@ -53,7 +54,7 @@ func (d *Dielectric) Scatter(ray *ray.Ray, rec *HitData) (bool, vec.Color) {
 
 	cannot_refract := sin_theta*refraction_ratio > 1
 
-	if cannot_refract {
+	if cannot_refract || d.reflectance(cos_theta, refraction_ratio) > rand.Float64() {
 		reflected := vec.Reflect(unit_direction, rec.Normal)
 		ray.Direction = reflected
 	} else {
@@ -63,4 +64,11 @@ func (d *Dielectric) Scatter(ray *ray.Ray, rec *HitData) (bool, vec.Color) {
 
 	ray.Origin = rec.Point
 	return true, *vec.New(1, 1, 1)
+}
+
+func (d *Dielectric) reflectance(cosine, ref_idx float64) float64 {
+	// Use Schlick's approximation for reflectance.
+	r0 := (1 - ref_idx) / (1 + ref_idx)
+	r0 = r0 * r0
+	return r0 + (1-r0)*math.Pow((1-cosine), 5)
 }
