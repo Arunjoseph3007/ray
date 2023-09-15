@@ -1,6 +1,7 @@
 package hit
 
 import (
+	"math"
 	"ray-tracing/ray"
 	"ray-tracing/vec"
 )
@@ -46,9 +47,20 @@ func (d *Dielectric) Scatter(ray *ray.Ray, rec *HitData) (bool, vec.Color) {
 	}
 
 	unit_direction := *vec.UnitVec(ray.Direction)
-	refracted := vec.Refract(unit_direction, rec.Normal, refraction_ratio)
 
-	ray.Direction = refracted
+	cos_theta := math.Min(vec.Dot(rec.Normal, *vec.Negative(unit_direction)), 1.0)
+	sin_theta := math.Sqrt(1 - cos_theta*cos_theta)
+
+	cannot_refract := sin_theta*refraction_ratio > 1
+
+	if cannot_refract {
+		reflected := vec.Reflect(unit_direction, rec.Normal)
+		ray.Direction = reflected
+	} else {
+		refracted := vec.Refract(unit_direction, rec.Normal, refraction_ratio)
+		ray.Direction = refracted
+	}
+
 	ray.Origin = rec.Point
 	return true, *vec.New(1, 1, 1)
 }
