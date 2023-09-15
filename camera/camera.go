@@ -10,23 +10,37 @@ import (
 )
 
 type Camera struct {
-	center            vec.Point
-	pixel00_loc       vec.Point
-	pixel_delta_u     vec.Vec3
-	pixel_delta_v     vec.Vec3
-	AspectRatio       float64
-	Width             int
-	Height            int
+	Width       int
+	Height      int
+	AspectRatio float64
+
 	samples_per_pixel int
 	max_depth         int
-	vfov              float64
 
+	center  vec.Point
+	vfov    float64
 	u, v, w vec.Vec3
+
+	pixel00_loc   vec.Point
+	pixel_delta_u vec.Vec3
+	pixel_delta_v vec.Vec3
+
+	DefocusAngle   float64
+	FocusDist      float64
+	defocus_disk_u vec.Vec3
+	defocus_disk_v vec.Vec3
 }
 
 var WHITE = vec.New(1, 1, 1)
 var BLACK = vec.New(0, 0, 0)
 var SKY_BLUE = vec.New(0.5, 0.7, 1)
+
+func (c *Camera) random_point_in_lens() vec.Point {
+	return *vec.Add(
+		c.center,
+		*vec.New(utils.Rand(0, .5), utils.Rand(0, .5), 0),
+	)
+}
 
 func (c *Camera) ray_color(r *ray.Ray, world hit.HitList, depth int) vec.Color {
 	hit_data := hit.HitData{}
@@ -74,7 +88,12 @@ func (c *Camera) Render(world hit.HitList) {
 			)
 			for i := 0; i < c.samples_per_pixel; i++ {
 				sample := vec.Add(pixel_center, c.pixel_sample_sq())
-				direction := vec.Sub(*sample, c.center)
+				ray_origin := vec.Add(
+					c.center,
+					// *vec.MulScalar(c.defocus_disk_u, utils.Rand(-.5, .5)),
+					// *vec.MulScalar(c.defocus_disk_v, utils.Rand(-.5, .5)),
+				)
+				direction := vec.Sub(*sample, *ray_origin)
 				r := *ray.New(c.center, *direction)
 
 				color.Add(c.ray_color(&r, world, c.max_depth))
@@ -94,6 +113,9 @@ func New(width int, aspectRatio float64, samplePerPixel int, maxDepth int) Camer
 	c.samples_per_pixel = samplePerPixel
 	c.max_depth = maxDepth
 
+	c.DefocusAngle = 10
+	c.FocusDist = 3.4
+
 	return c
 }
 
@@ -101,9 +123,9 @@ func (c *Camera) Adjust(angle float64, from, at, viewup vec.Vec3) {
 	c.vfov = angle
 
 	c.center = from
-	focal_length := vec.Sub(at, from).Length()
+	// focal_length := vec.Sub(at, from).Length()
 	rad := c.vfov * math.Pi / 180
-	viewport_height := math.Tan(rad/2) * 2 * focal_length
+	viewport_height := math.Tan(rad/2) * 2 * c.FocusDist
 	viewport_width := viewport_height * float64(c.Width) / float64(c.Height)
 
 	c.w = *vec.UnitVec(*vec.Sub(from, at))
@@ -119,7 +141,7 @@ func (c *Camera) Adjust(angle float64, from, at, viewup vec.Vec3) {
 	viewport_up_left := vec.Sub(
 		c.center,
 		*vec.Add(
-			*vec.MulScalar(c.w, focal_length),
+			*vec.MulScalar(c.w, c.FocusDist),
 			*vec.MulScalar(*viewport_u, .5),
 			*vec.MulScalar(*viewport_v, .5),
 		),
@@ -129,4 +151,9 @@ func (c *Camera) Adjust(angle float64, from, at, viewup vec.Vec3) {
 		*vec.DivScalar(c.pixel_delta_u, 2),
 		*vec.DivScalar(c.pixel_delta_v, 2),
 	)
+
+	// Calculate the camera defocus disk basis vectors.
+	defocus_radius := c.FocusDist * math.Tan((c.DefocusAngle/2)*math.Pi/180)
+	c.defocus_disk_u = *vec.MulScalar(c.u, defocus_radius)
+	c.defocus_disk_v = *vec.MulScalar(c.v, defocus_radius)
 }

@@ -7,13 +7,13 @@ import (
 	"ray-tracing/vec"
 )
 
-type Shpere struct {
+type Sphere struct {
 	Center   vec.Point
 	Radius   float64
 	Material Material
 }
 
-func (s Shpere) Hit(r ray.Ray, limit utils.Interval, ret *HitData) bool {
+func (s Sphere) Hit(r ray.Ray, limit utils.Interval, ret *HitData) bool {
 	oc := vec.Sub(r.Origin, s.Center)
 	a := r.Direction.LengthSquare()
 	half_b := vec.Dot(r.Direction, *oc)
