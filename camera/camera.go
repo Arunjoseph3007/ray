@@ -54,8 +54,8 @@ func (c *Camera) ray_color(r *ray.Ray, world hit.HitList, depth int) vec.Color {
 
 func (c *Camera) pixel_sample_sq() vec.Vec3 {
 	return *vec.Add(
-		*vec.MulScalar(c.pixel_delta_u, utils.Rand(-0.3, .3)),
-		*vec.MulScalar(c.pixel_delta_v, utils.Rand(-0.3, .3)),
+		*vec.MulScalar(c.pixel_delta_u, utils.Rand(-0.5, .5)),
+		*vec.MulScalar(c.pixel_delta_v, utils.Rand(-0.5, .5)),
 	)
 }
 

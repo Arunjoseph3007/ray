@@ -91,7 +91,7 @@ func Reflect(v Vec3, normal Vec3) Vec3 {
 }
 
 func Refract(v Vec3, normal Vec3, refract_index float64) Vec3 {
-	cos_theta := math.Min(Dot(normal, *Negative(v)), 1)
+	cos_theta := math.Min(Dot(*Negative(v), normal), 1.0)
 	r_perp := MulScalar(
 		*Add(
 			v,
@@ -99,7 +99,11 @@ func Refract(v Vec3, normal Vec3, refract_index float64) Vec3 {
 		),
 		refract_index,
 	)
-	r_parllel := MulScalar(normal, -math.Sqrt(1-v.LengthSquare()))
+	r_parllel := MulScalar(
+		normal,
+		-math.Sqrt(math.Abs(1-r_perp.LengthSquare())),
+	)
+
 	return *Add(*r_perp, *r_parllel)
 }
 
