@@ -27,6 +27,10 @@ func (v *Vec3) Y() float64 { return v.e[1] }
 
 func (v *Vec3) Z() float64 { return v.e[2] }
 
+func (v *Vec3) Get(n int) float64 {
+	return v.e[n]
+}
+
 func (v Vec3) Negative() *Vec3 {
 	return &Vec3{
 		e: [3]float64{-v.e[0], -v.e[1], -v.e[2]},

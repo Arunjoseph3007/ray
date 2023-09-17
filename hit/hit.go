@@ -1,6 +1,7 @@
 package hit
 
 import (
+	"ray-tracing/bvh"
 	"ray-tracing/ray"
 	"ray-tracing/utils"
 	"ray-tracing/vec"
@@ -25,4 +26,6 @@ func (h *HitData) SetFrontFace(r ray.Ray, out_normal vec.Vec3) {
 
 type Hitable interface {
 	Hit(r ray.Ray, limit utils.Interval, ret *HitData) bool
+
+	BoundingBox() bvh.AABB
 }

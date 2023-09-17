@@ -72,6 +72,7 @@ func (c *Camera) Render(world hit.HitList) {
 	fmt.Println("255")
 
 	for j := 0; j < c.Height; j++ {
+		print("\rRemaining ", j*100/c.Height, "%")
 		for i := 0; i < c.Width; i++ {
 			color := vec.New(0, 0, 0)
 			pixel_center := *vec.Add(
@@ -95,6 +96,8 @@ func (c *Camera) Render(world hit.HitList) {
 			fmt.Print(color.ToClrStr())
 		}
 	}
+	print("\rRemaining ", 100, "%")
+	println("\nDone")
 }
 
 func New(width int, aspectRatio float64, samplePerPixel int, maxDepth int) Camera {
@@ -106,7 +109,7 @@ func New(width int, aspectRatio float64, samplePerPixel int, maxDepth int) Camer
 	c.samples_per_pixel = samplePerPixel
 	c.max_depth = maxDepth
 
-	c.DefocusAngle = 0.6
+	c.DefocusAngle = 0
 	c.FocusDist = 10
 
 	return c
