@@ -2,6 +2,7 @@ package main
 
 import (
 	"math/rand"
+	"os"
 	"ray-tracing/camera"
 	"ray-tracing/hit"
 	"ray-tracing/utils"
@@ -11,8 +12,8 @@ import (
 func getTestWorld() {
 	world := hit.NewHitList()
 
-	material_ground := &hit.Lambertian{Albedo: *vec.New(0.8, 0.8, 0.0)}
-	material_center := &hit.Lambertian{Albedo: *vec.New(0.1, 0.2, 0.5)}
+	material_ground := hit.NewLambertianFromColor(*vec.New(0.8, 0.8, 0.0))
+	material_center := hit.NewLambertianFromColor(*vec.New(0.1, 0.2, 0.5))
 	material_left := &hit.Dielectric{RefractIndex: 1.5}
 	material_right := &hit.Metal{Albedo: *vec.New(0.8, 0.6, 0.2), Fuzz: 0.0}
 
@@ -41,7 +42,7 @@ func getTestWorld() {
 func getAwesomeWorld() {
 	world := hit.NewHitList()
 
-	ground_material := &hit.Lambertian{Albedo: *vec.New(0.5, 0.5, 0.5)}
+	ground_material := hit.NewLambertianFromColor(*vec.New(0.5, 0.5, 0.5))
 	world.Add(hit.NewSphere(*vec.New(0, -1000, 0), 1000, ground_material))
 
 	for a := -11; a < 11; a++ {
@@ -54,7 +55,7 @@ func getAwesomeWorld() {
 				if choose_mat < 0.8 {
 					// diffuse
 					albedo := vec.Random(-1, 1)
-					sphere_material := &hit.Lambertian{Albedo: albedo}
+					sphere_material := hit.NewLambertianFromColor(albedo)
 					world.Add(hit.NewSphere(*center, 0.2, sphere_material))
 				} else if choose_mat < 0.95 {
 					// metal
@@ -74,7 +75,7 @@ func getAwesomeWorld() {
 	material1 := &hit.Dielectric{RefractIndex: 1.5}
 	world.Add(hit.NewSphere(*vec.New(0.0, 1, 0), 1.0, material1))
 
-	material2 := &hit.Lambertian{Albedo: *vec.New(0.4, 0.2, 0.1)}
+	material2 := hit.NewLambertianFromColor(*vec.New(0.4, 0.2, 0.1))
 	world.Add(hit.NewSphere(*vec.New(-4, 1, 0), 1.0, material2))
 
 	material3 := &hit.Metal{Albedo: *vec.New(0.7, 0.6, 0.5), Fuzz: 0.0}
@@ -102,6 +103,14 @@ func getAwesomeWorld() {
 }
 
 func main() {
-	// getTestWorld()
-	getAwesomeWorld()
+	arg := os.Args[1]
+
+	switch arg {
+	case "awesome":
+		getAwesomeWorld()
+	case "test":
+		getTestWorld()
+	default:
+		println("Please provide scene")
+	}
 }

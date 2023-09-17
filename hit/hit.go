@@ -13,6 +13,7 @@ type HitData struct {
 	T          float64
 	Material   Material
 	front_face bool
+	U, V       float64
 }
 
 func (h *HitData) SetFrontFace(r ray.Ray, out_normal vec.Vec3) {

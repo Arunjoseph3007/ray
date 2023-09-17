@@ -31,6 +31,13 @@ func NewSphere(center vec.Point, radius float64, mat Material) Sphere {
 	return s
 }
 
+func (s Sphere) GetUV(p vec.Point) (u, v float64) {
+	theta := math.Atan2(-p.Z(), p.X()) + math.Pi
+	phi := math.Acos(-p.Y())
+
+	return phi / (2 * math.Pi), theta / math.Pi
+}
+
 func (s Sphere) Hit(r ray.Ray, limit utils.Interval, ret *HitData) bool {
 	oc := vec.Sub(r.Origin, s.Center)
 	a := r.Direction.LengthSquare()
@@ -59,6 +66,7 @@ func (s Sphere) Hit(r ray.Ray, limit utils.Interval, ret *HitData) bool {
 	ret.Point = p
 	ret.Normal = *out_norm
 	ret.Material = s.Material
+	ret.U, ret.V = s.GetUV(*out_norm)
 	ret.SetFrontFace(r, *out_norm)
 
 	return true
