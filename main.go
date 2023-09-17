@@ -154,6 +154,40 @@ func getEarth() {
 	cam.Render(world)
 }
 
+func getSimpleLight() {
+	world := hit.NewHitList()
+
+	material_ground := hit.NewLambertianFromColor(*vec.New(0.05, 0.05, 0.05))
+	material_center := hit.NewLambertianFromColor(*vec.New(0.1, 0.2, 0.5))
+	material_left := &hit.Dielectric{RefractIndex: 1.5}
+	material_right := &hit.Metal{Albedo: *vec.New(0.8, 0.6, 0.2), Fuzz: 0.0}
+	light_material := hit.NewLightFromColor(*vec.WHITE)
+
+	world.Add(hit.NewSphere(*vec.New(0.0, -100.5, -1.0), 100.0, material_ground))
+	world.Add(hit.NewSphere(*vec.New(0.0, 0.0, -1.0), 0.5, material_right))
+	world.Add(hit.NewSphere(*vec.New(-1.0, 0.0, -1.0), 0.5, material_left))
+	world.Add(hit.NewSphere(*vec.New(-1.0, 0.0, -1.0), -0.4, material_left))
+	world.Add(hit.NewSphere(*vec.New(1.0, 0.0, -1.0), 0.5, light_material))
+	world.Add(hit.NewSphere(*vec.New(2.0, 0.0, -1.0), 0.5, material_center))
+	cam := camera.New(
+		400,
+		16.0/9.0,
+		20,
+		30,
+	)
+
+	cam.Background = *vec.BLACK
+
+	cam.Adjust(
+		30,
+		*vec.New(-2, 1, 1),
+		*vec.New(0, 0, -1),
+		*vec.New(0, 1, 0),
+	)
+
+	cam.Render(world)
+}
+
 func main() {
 	arg := os.Args[1]
 
@@ -166,6 +200,8 @@ func main() {
 		getTwoCheckerSphere()
 	case "earth":
 		getEarth()
+	case "light":
+		getSimpleLight()
 	default:
 		println("Please provide scene")
 	}

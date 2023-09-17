@@ -5,6 +5,10 @@ import (
 	"math"
 )
 
+var WHITE = New(1, 1, 1)
+var BLACK = New(0, 0, 0)
+var SKY_BLUE = New(0.5, 0.7, 1)
+
 type Vec3 struct {
 	e [3]float64
 }

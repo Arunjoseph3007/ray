@@ -19,3 +19,7 @@ func (m *Metal) Scatter(ray *ray.Ray, rec *HitData) (bool, vec.Color) {
 	ray.Origin = rec.Point
 	return true, m.Albedo
 }
+
+func (m *Metal) Emitted(u, v float64, p vec.Point) vec.Color {
+	return *vec.BLACK
+}

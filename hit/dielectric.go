@@ -36,6 +36,10 @@ func (d *Dielectric) Scatter(ray *ray.Ray, rec *HitData) (bool, vec.Color) {
 	return true, *vec.New(1, 1, 1)
 }
 
+func (d *Dielectric) Emitted(u, v float64, p vec.Point) vec.Color {
+	return *vec.BLACK
+}
+
 func (d *Dielectric) reflectance(cosine, ref_idx float64) float64 {
 	// Use Schlick's approximation for reflectance.
 	r0 := (1 - ref_idx) / (1 + ref_idx)

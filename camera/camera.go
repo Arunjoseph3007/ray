@@ -29,34 +29,30 @@ type Camera struct {
 	FocusDist      float64
 	defocus_disk_u vec.Vec3
 	defocus_disk_v vec.Vec3
-}
 
-var WHITE = vec.New(1, 1, 1)
-var BLACK = vec.New(0, 0, 0)
-var SKY_BLUE = vec.New(0.5, 0.7, 1)
+	Background vec.Color
+}
 
 func (c *Camera) ray_color(r *ray.Ray, world hit.HitList, depth int) vec.Color {
 	hit_data := hit.HitData{}
 
 	if depth == 0 {
-		return *BLACK
+		return *vec.BLACK
 	}
 
-	if world.Hit(*r, utils.NewInterval(0.01, math.Inf(1)), &hit_data) {
-		did_scatter, atten := hit_data.Material.Scatter(r, &hit_data)
-		if did_scatter {
-			return *vec.Mul(atten, c.ray_color(r, world, depth-1))
-		}
-		return *BLACK
+	if !world.Hit(*r, utils.NewInterval(0.01, math.Inf(1)), &hit_data) {
+		return c.Background
 	}
 
-	dir := vec.UnitVec(r.Direction)
-	a := 0.5 * (dir.Y() + 1)
+	emitted_color := hit_data.Material.Emitted(hit_data.U, hit_data.V, hit_data.Point)
 
-	return *vec.Add(
-		*vec.MulScalar(*WHITE, 1-a),
-		*vec.MulScalar(*SKY_BLUE, a),
-	)
+	did_scatter, atten := hit_data.Material.Scatter(r, &hit_data)
+	if !did_scatter {
+		return emitted_color
+	}
+	scatter_color := *vec.Mul(atten, c.ray_color(r, world, depth-1))
+
+	return *vec.Add(emitted_color, scatter_color)
 }
 
 func (c *Camera) pixel_sample_sq() vec.Vec3 {
@@ -111,6 +107,8 @@ func New(width int, aspectRatio float64, samplePerPixel int, maxDepth int) Camer
 
 	c.DefocusAngle = 0
 	c.FocusDist = 10
+
+	c.Background = *vec.SKY_BLUE
 
 	return c
 }

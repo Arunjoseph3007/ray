@@ -17,6 +17,10 @@ func (l *Lambertian) Scatter(ray *ray.Ray, rec *HitData) (bool, vec.Color) {
 	return true, l.Albedo.Value(rec.U, rec.V, rec.Point)
 }
 
+func (l *Lambertian) Emitted(u, v float64, p vec.Point) vec.Color {
+	return *vec.BLACK
+}
+
 func NewLambertianFromColor(color vec.Color) *Lambertian {
 	return &Lambertian{
 		Albedo: texture.NewSolidTextureFromColor(color),
