@@ -31,9 +31,9 @@ func NewSphere(center vec.Point, radius float64, mat Material) Sphere {
 	return s
 }
 
-func (s Sphere) GetUV(p vec.Point) (u, v float64) {
-	theta := math.Atan2(-p.Z(), p.X()) + math.Pi
-	phi := math.Acos(-p.Y())
+func (s Sphere) GetUV(p vec.Point) (float64, float64) {
+	phi := math.Atan2(-p.Z(), p.X()) + math.Pi
+	theta := math.Acos(-p.Y())
 
 	return phi / (2 * math.Pi), theta / math.Pi
 }

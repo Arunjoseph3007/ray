@@ -96,7 +96,7 @@ func (c *Camera) Render(world hit.HitList) {
 			fmt.Print(color.ToClrStr())
 		}
 	}
-	print("\rRemaining ", 100, "%")
+	print("\rRemaining 100%")
 	println("\nDone")
 }
 

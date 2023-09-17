@@ -129,6 +129,31 @@ func getTwoCheckerSphere() {
 
 }
 
+func getEarth() {
+	world := hit.NewHitList()
+
+	earth_texture := texture.NewImageTexture("assets/earthmap.png")
+	earth_surface := hit.NewLambertianFromtexture(earth_texture)
+
+	world.Add(hit.NewSphere(*vec.New(0, 0, 0), 2, earth_surface))
+
+	cam := camera.New(
+		400,
+		16.0/9.0,
+		20,
+		20,
+	)
+
+	cam.Adjust(
+		20,
+		*vec.New(0, 0, 12),
+		*vec.New(0, 0, 0),
+		*vec.New(0, 1, 0),
+	)
+
+	cam.Render(world)
+}
+
 func main() {
 	arg := os.Args[1]
 
@@ -139,6 +164,8 @@ func main() {
 		getTestWorld()
 	case "checker":
 		getTwoCheckerSphere()
+	case "earth":
+		getEarth()
 	default:
 		println("Please provide scene")
 	}
