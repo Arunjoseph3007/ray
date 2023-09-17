@@ -102,6 +102,10 @@ func getAwesomeWorld() {
 	cam.Render(newWorld)
 }
 
+func getTwoCheckerSphere() {
+
+}
+
 func main() {
 	arg := os.Args[1]
 
@@ -110,6 +114,8 @@ func main() {
 		getAwesomeWorld()
 	case "test":
 		getTestWorld()
+	case "checker":
+		getTwoCheckerSphere()
 	default:
 		println("Please provide scene")
 	}
