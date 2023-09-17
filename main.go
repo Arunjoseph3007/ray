@@ -5,6 +5,7 @@ import (
 	"os"
 	"ray-tracing/camera"
 	"ray-tracing/hit"
+	"ray-tracing/texture"
 	"ray-tracing/utils"
 	"ray-tracing/vec"
 )
@@ -103,6 +104,28 @@ func getAwesomeWorld() {
 }
 
 func getTwoCheckerSphere() {
+	world := hit.NewHitList()
+
+	checker := texture.NewCheckerFromColors(0.8, *vec.New(.2, .3, .1), *vec.New(.9, .9, .9))
+
+	world.Add(hit.NewSphere(*vec.New(0, -10, 0), 10, hit.NewLambertianFromtexture(checker)))
+	world.Add(hit.NewSphere(*vec.New(0, 10, 0), 10, hit.NewLambertianFromtexture(checker)))
+
+	cam := camera.New(
+		400,
+		16.0/9.0,
+		20,
+		20,
+	)
+
+	cam.Adjust(
+		20,
+		*vec.New(13, 2, 3),
+		*vec.New(0, 0, 0),
+		*vec.New(0, 1, 0),
+	)
+
+	cam.Render(world)
 
 }
 
