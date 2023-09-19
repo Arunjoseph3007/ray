@@ -3,6 +3,7 @@ package vec
 import (
 	"fmt"
 	"math"
+	"image/color"
 )
 
 var WHITE = New(1, 1, 1)
@@ -73,6 +74,13 @@ func (v *Vec3) Length() float64 {
 
 func (v *Vec3) ToStr() string {
 	return fmt.Sprintf("%f %f %f ", v.e[0], v.e[1], v.e[2])
+}
+
+func (v *Vec3) ToIntArr() color.RGBA {
+	x := uint8(math.Sqrt(v.e[0]) * 255.99)
+	y := uint8(math.Sqrt(v.e[1]) * 255.99)
+	z := uint8(math.Sqrt(v.e[2]) * 255.99)
+	return color.RGBA{x, y, z, 0xff}
 }
 
 func (v *Vec3) ToClrStr() string {

@@ -7,6 +7,9 @@ import (
 	"ray-tracing/ray"
 	"ray-tracing/utils"
 	"ray-tracing/vec"
+	"image"
+    "image/png"
+	"os"
 )
 
 type Camera struct {
@@ -67,6 +70,11 @@ func (c *Camera) Render(world hit.HitList) {
 	fmt.Println(c.Width, c.Height)
 	fmt.Println("255")
 
+	upLeft := image.Point{0, 0}
+	lowRight := image.Point{c.Width, c.Height}
+
+	img := image.NewRGBA(image.Rectangle{upLeft, lowRight})
+
 	for j := 0; j < c.Height; j++ {
 		print("\rRemaining ", j*100/c.Height, "%")
 		for i := 0; i < c.Width; i++ {
@@ -88,10 +96,16 @@ func (c *Camera) Render(world hit.HitList) {
 
 				color.Add(c.ray_color(&r, world, c.max_depth))
 			}
+
 			color.DivScalar(float64(c.samples_per_pixel))
-			fmt.Print(color.ToClrStr())
+			img.Set(i,j,color.ToIntArr())
+			// fmt.Print(color.ToClrStr())
 		}
 	}
+
+	f, _ := os.Create("image.png")
+	png.Encode(f, img)
+	defer f.Close()
 	print("\rRemaining 100%")
 	println("\nDone")
 }
