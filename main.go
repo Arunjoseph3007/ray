@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math"
 	"math/rand"
 	"os"
 	"ray-tracing/camera"
@@ -10,7 +11,7 @@ import (
 	"ray-tracing/vec"
 )
 
-func getTestWorld() {
+func TestScene() {
 	world := hit.NewHitList()
 
 	material_ground := hit.NewLambertianFromColor(*vec.New(0.8, 0.8, 0.0))
@@ -40,7 +41,7 @@ func getTestWorld() {
 	cam.Render(world)
 }
 
-func getAwesomeWorld() {
+func AwesomeScene() {
 	world := hit.NewHitList()
 
 	ground_material := hit.NewLambertianFromColor(*vec.New(0.5, 0.5, 0.5))
@@ -103,7 +104,7 @@ func getAwesomeWorld() {
 	cam.Render(newWorld)
 }
 
-func getTwoCheckerSphere() {
+func CheckerSphereScene() {
 	world := hit.NewHitList()
 
 	checker := texture.NewCheckerFromColors(0.8, *vec.New(.2, .3, .1), *vec.New(.9, .9, .9))
@@ -128,7 +129,7 @@ func getTwoCheckerSphere() {
 	cam.Render(world)
 }
 
-func getEarth() {
+func EarthScene() {
 	world := hit.NewHitList()
 
 	earth_texture := texture.NewImageTexture("assets/earthmap.png")
@@ -153,7 +154,7 @@ func getEarth() {
 	cam.Render(world)
 }
 
-func getSimpleLight() {
+func SimpleLightScene() {
 	world := hit.NewHitList()
 
 	material_ground := hit.NewLambertianFromColor(*vec.New(0.05, 0.05, 0.05))
@@ -187,7 +188,7 @@ func getSimpleLight() {
 	cam.Render(world)
 }
 
-func getQuads() {
+func CornelScene() {
 	world := hit.NewHitList()
 	red := hit.NewLambertianFromColor(*vec.New(.65, .05, .05))
 	white := hit.NewLambertianFromColor(*vec.New(.73, .73, .73))
@@ -200,6 +201,9 @@ func getQuads() {
 	world.Add(hit.NewQuad(*vec.New(0, 0, 0), *vec.New(555, 0, 0), *vec.New(0, 0, 555), white))
 	world.Add(hit.NewQuad(*vec.New(555, 555, 555), *vec.New(-555, 0, 0), *vec.New(0, 0, -555), white))
 	world.Add(hit.NewQuad(*vec.New(0, 0, 555), *vec.New(555, 0, 0), *vec.New(0, 555, 0), white))
+
+	world.Add(getBox(*vec.New(130, 0, 65), *vec.New(295, 165, 230), white))
+	world.Add(getBox(*vec.New(265, 0, 295), *vec.New(430, 330, 460), white))
 
 	cam := camera.New(
 		300,
@@ -218,7 +222,27 @@ func getQuads() {
 	cam.Render(world)
 }
 
-func getCornel() {
+func getBox(a, b vec.Point, mat hit.Material) hit.HitList {
+	sides := hit.NewHitList()
+
+	min := *vec.New(math.Min(a.X(), b.X()), math.Min(a.Y(), b.Y()), math.Min(a.Z(), b.Z()))
+	max := *vec.New(math.Max(a.X(), b.X()), math.Max(a.Y(), b.Y()), math.Max(a.Z(), b.Z()))
+
+	dx := *vec.New(max.X()-min.X(), 0, 0)
+	dy := *vec.New(0, max.Y()-min.Y(), 0)
+	dz := *vec.New(0, 0, max.Z()-min.Z())
+
+	sides.Add(hit.NewQuad(*vec.New(min.X(), min.Y(), max.Z()), dx, dy, mat))
+	sides.Add(hit.NewQuad(*vec.New(max.X(), min.Y(), max.Z()), *vec.Negative(dz), dy, mat))
+	sides.Add(hit.NewQuad(*vec.New(max.X(), min.Y(), min.Z()), *vec.Negative(dx), dy, mat))
+	sides.Add(hit.NewQuad(*vec.New(min.X(), min.Y(), min.Z()), dz, dy, mat))
+	sides.Add(hit.NewQuad(*vec.New(min.X(), max.Y(), max.Z()), dx, *vec.Negative(dz), mat))
+	sides.Add(hit.NewQuad(*vec.New(min.X(), min.Y(), min.Z()), dx, dz, mat))
+
+	return sides
+}
+
+func QuadsScene() {
 	world := hit.NewHitList()
 	left_red := hit.NewLambertianFromColor(*vec.New(1.0, 0.2, 0.2))
 	back_green := hit.NewLambertianFromColor(*vec.New(0.2, 1.0, 0.2))
@@ -258,19 +282,19 @@ func main() {
 
 	switch arg {
 	case "awesome":
-		getAwesomeWorld()
+		AwesomeScene()
 	case "test":
-		getTestWorld()
+		TestScene()
 	case "checker":
-		getTwoCheckerSphere()
+		CheckerSphereScene()
 	case "earth":
-		getEarth()
+		EarthScene()
 	case "light":
-		getSimpleLight()
+		SimpleLightScene()
 	case "quad":
-		getQuads()
+		QuadsScene()
 	case "cornel":
-		getCornel()
+		CornelScene()
 	default:
 		println("Please provide scene")
 	}
