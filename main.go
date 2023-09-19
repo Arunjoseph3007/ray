@@ -189,11 +189,44 @@ func getSimpleLight() {
 
 func getQuads() {
 	world := hit.NewHitList()
+	red := hit.NewLambertianFromColor(*vec.New(.65, .05, .05))
+	white := hit.NewLambertianFromColor(*vec.New(.73, .73, .73))
+	green := hit.NewLambertianFromColor(*vec.New(.12, .45, .15))
+	light := hit.NewLightFromColor(*vec.New(15, 15, 15))
+
+	world.Add(hit.NewQuad(*vec.New(555, 0, 0), *vec.New(0, 555, 0), *vec.New(0, 0, 555), green))
+	world.Add(hit.NewQuad(*vec.New(0, 0, 0), *vec.New(0, 555, 0), *vec.New(0, 0, 555), red))
+	world.Add(hit.NewQuad(*vec.New(343, 554, 332), *vec.New(-130, 0, 0), *vec.New(0, 0, -105), light))
+	world.Add(hit.NewQuad(*vec.New(0, 0, 0), *vec.New(555, 0, 0), *vec.New(0, 0, 555), white))
+	world.Add(hit.NewQuad(*vec.New(555, 555, 555), *vec.New(-555, 0, 0), *vec.New(0, 0, -555), white))
+	world.Add(hit.NewQuad(*vec.New(0, 0, 555), *vec.New(555, 0, 0), *vec.New(0, 555, 0), white))
+
+	cam := camera.New(
+		300,
+		1,
+		100,
+		20,
+	)
+	cam.Background = *vec.BLACK
+	cam.Adjust(
+		40,
+		*vec.New(278, 278, -800),
+		*vec.New(278, 278, 0),
+		*vec.New(0, 1, 0),
+	)
+
+	cam.Render(world)
+}
+
+func getCornel() {
+	world := hit.NewHitList()
 	left_red := hit.NewLambertianFromColor(*vec.New(1.0, 0.2, 0.2))
 	back_green := hit.NewLambertianFromColor(*vec.New(0.2, 1.0, 0.2))
 	right_blue := hit.NewLambertianFromColor(*vec.New(0.2, 0.2, 1.0))
 	upper_orange := hit.NewLambertianFromColor(*vec.New(1.0, 0.5, 0.0))
 	lower_teal := hit.NewLambertianFromColor(*vec.New(0.2, 0.8, 0.8))
+
+	light := hit.NewLightFromColor(*vec.WHITE)
 
 	world.Add(hit.NewQuad(*vec.New(-3, -2, 5), *vec.New(0, 0, -4), *vec.New(0, 4, 0), left_red))
 	world.Add(hit.NewQuad(*vec.New(-2, -2, 0), *vec.New(4, 0, 0), *vec.New(0, 4, 0), back_green))
@@ -201,12 +234,15 @@ func getQuads() {
 	world.Add(hit.NewQuad(*vec.New(-2, 3, 1), *vec.New(4, 0, 0), *vec.New(0, 0, 4), upper_orange))
 	world.Add(hit.NewQuad(*vec.New(-2, -3, 5), *vec.New(4, 0, 0), *vec.New(0, 0, -4), lower_teal))
 
+	world.Add(hit.NewSphere(*vec.New(-2.5, 0, 0), .5, light))
+
 	cam := camera.New(
-		400,
+		300,
 		1,
-		20,
-		30,
+		100,
+		50,
 	)
+	cam.Background = *vec.BLACK
 	cam.Adjust(
 		80,
 		*vec.New(0, 0, 9),
@@ -233,6 +269,8 @@ func main() {
 		getSimpleLight()
 	case "quad":
 		getQuads()
+	case "cornel":
+		getCornel()
 	default:
 		println("Please provide scene")
 	}
