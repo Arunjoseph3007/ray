@@ -126,7 +126,6 @@ func getTwoCheckerSphere() {
 	)
 
 	cam.Render(world)
-
 }
 
 func getEarth() {
@@ -188,6 +187,36 @@ func getSimpleLight() {
 	cam.Render(world)
 }
 
+func getQuads() {
+	world := hit.NewHitList()
+	left_red := hit.NewLambertianFromColor(*vec.New(1.0, 0.2, 0.2))
+	back_green := hit.NewLambertianFromColor(*vec.New(0.2, 1.0, 0.2))
+	right_blue := hit.NewLambertianFromColor(*vec.New(0.2, 0.2, 1.0))
+	upper_orange := hit.NewLambertianFromColor(*vec.New(1.0, 0.5, 0.0))
+	lower_teal := hit.NewLambertianFromColor(*vec.New(0.2, 0.8, 0.8))
+
+	world.Add(hit.NewQuad(*vec.New(-3, -2, 5), *vec.New(0, 0, -4), *vec.New(0, 4, 0), left_red))
+	world.Add(hit.NewQuad(*vec.New(-2, -2, 0), *vec.New(4, 0, 0), *vec.New(0, 4, 0), back_green))
+	world.Add(hit.NewQuad(*vec.New(3, -2, 1), *vec.New(0, 0, 4), *vec.New(0, 4, 0), right_blue))
+	world.Add(hit.NewQuad(*vec.New(-2, 3, 1), *vec.New(4, 0, 0), *vec.New(0, 0, 4), upper_orange))
+	world.Add(hit.NewQuad(*vec.New(-2, -3, 5), *vec.New(4, 0, 0), *vec.New(0, 0, -4), lower_teal))
+
+	cam := camera.New(
+		400,
+		1,
+		20,
+		30,
+	)
+	cam.Adjust(
+		80,
+		*vec.New(0, 0, 9),
+		*vec.New(0, 0, 0),
+		*vec.New(0, 1, 0),
+	)
+
+	cam.Render(world)
+}
+
 func main() {
 	arg := os.Args[1]
 
@@ -202,6 +231,8 @@ func main() {
 		getEarth()
 	case "light":
 		getSimpleLight()
+	case "quad":
+		getQuads()
 	default:
 		println("Please provide scene")
 	}

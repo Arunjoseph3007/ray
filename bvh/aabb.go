@@ -72,3 +72,22 @@ func (ab *AABB) Hit(r ray.Ray, t utils.Interval) bool {
 	}
 	return true
 }
+
+func (ab AABB) Pad() AABB {
+	delta := 0.0001
+
+	newX := ab.X
+	if newX.Size() < delta {
+		newX = ab.X.Expand(delta)
+	}
+	newY := ab.Y
+	if newY.Size() < delta {
+		newY = ab.Y.Expand(delta)
+	}
+	newZ := ab.Z
+	if newZ.Size() < delta {
+		newZ = ab.Z.Expand(delta)
+	}
+
+	return New(newX, newY, newZ)
+}

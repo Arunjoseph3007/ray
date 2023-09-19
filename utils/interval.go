@@ -7,6 +7,8 @@ type Interval struct {
 	Max float64
 }
 
+var UnitInterval Interval = NewInterval(0, 1)
+
 func GroupInterval(a, b Interval) Interval {
 	return Interval{
 		Min: math.Min(a.Min, b.Min),
