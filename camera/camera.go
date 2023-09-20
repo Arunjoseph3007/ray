@@ -1,7 +1,6 @@
 package camera
 
 import (
-	"fmt"
 	"math"
 	"ray-tracing/hit"
 	"ray-tracing/ray"
@@ -65,18 +64,14 @@ func (c *Camera) pixel_sample_sq() vec.Vec3 {
 	)
 }
 
-func (c *Camera) Render(world hit.HitList) {
-	fmt.Println("P3")
-	fmt.Println(c.Width, c.Height)
-	fmt.Println("255")
-
+func (c *Camera) Render(world hit.HitList,file string) {
 	upLeft := image.Point{0, 0}
 	lowRight := image.Point{c.Width, c.Height}
 
 	img := image.NewRGBA(image.Rectangle{upLeft, lowRight})
 
 	for j := 0; j < c.Height; j++ {
-		print("\rRemaining ", j*100/c.Height, "%")
+		print("\rCompleted ", j*100/c.Height, "%")
 		for i := 0; i < c.Width; i++ {
 			color := vec.New(0, 0, 0)
 			pixel_center := *vec.Add(
@@ -99,14 +94,13 @@ func (c *Camera) Render(world hit.HitList) {
 
 			color.DivScalar(float64(c.samples_per_pixel))
 			img.Set(i,j,color.ToIntArr())
-			// fmt.Print(color.ToClrStr())
 		}
 	}
 
-	f, _ := os.Create("image.png")
-	png.Encode(f, img)
+	f, _ := os.Create("out/"+ file + ".png")
 	defer f.Close()
-	print("\rRemaining 100%")
+	png.Encode(f, img)
+	print("\rCompleted 100%")
 	println("\nDone")
 }
 

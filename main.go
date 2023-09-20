@@ -38,7 +38,7 @@ func TestScene() {
 		*vec.New(0, 1, 0),
 	)
 
-	cam.Render(world)
+	cam.Render(world,"test")
 }
 
 func AwesomeScene() {
@@ -90,8 +90,8 @@ func AwesomeScene() {
 	cam := camera.New(
 		600,
 		16.0/9.0,
-		8,
-		20,
+		50,
+		50,
 	)
 
 	cam.Adjust(
@@ -101,7 +101,7 @@ func AwesomeScene() {
 		*vec.New(0, 1, 0),
 	)
 	println("Rendering ", len(world.Objects), "objects")
-	cam.Render(newWorld)
+	cam.Render(newWorld, "awesome")
 }
 
 func CheckerSphereScene() {
@@ -126,7 +126,7 @@ func CheckerSphereScene() {
 		*vec.New(0, 1, 0),
 	)
 
-	cam.Render(world)
+	cam.Render(world, "checker")
 }
 
 func EarthScene() {
@@ -151,7 +151,7 @@ func EarthScene() {
 		*vec.New(0, 1, 0),
 	)
 
-	cam.Render(world)
+	cam.Render(world,"earth")
 }
 
 func SimpleLightScene() {
@@ -172,11 +172,11 @@ func SimpleLightScene() {
 	cam := camera.New(
 		400,
 		16.0/9.0,
-		20,
-		30,
+		50,
+		100,
 	)
 
-	cam.Background = *vec.BLACK
+	cam.Background = *vec.New(100/255,100/255,100/255)
 
 	cam.Adjust(
 		30,
@@ -185,7 +185,7 @@ func SimpleLightScene() {
 		*vec.New(0, 1, 0),
 	)
 
-	cam.Render(world)
+	cam.Render(world, "light")
 }
 
 func CornelScene() {
@@ -219,7 +219,7 @@ func CornelScene() {
 		*vec.New(0, 1, 0),
 	)
 
-	cam.Render(world)
+	cam.Render(world, "cornel")
 }
 
 func getBox(a, b vec.Point, mat hit.Material) hit.HitList {
@@ -274,7 +274,7 @@ func QuadsScene() {
 		*vec.New(0, 1, 0),
 	)
 
-	cam.Render(world)
+	cam.Render(world, "quad")
 }
 
 func main() {
