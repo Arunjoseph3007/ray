@@ -1,14 +1,17 @@
 package camera
 
 import (
+	"fmt"
+	"image"
+	"image/color"
+	"image/png"
 	"math"
+	"os"
 	"ray-tracing/hit"
 	"ray-tracing/ray"
 	"ray-tracing/utils"
 	"ray-tracing/vec"
-	"image"
-    "image/png"
-	"os"
+	"sync"
 )
 
 type Camera struct {
@@ -64,7 +67,7 @@ func (c *Camera) pixel_sample_sq() vec.Vec3 {
 	)
 }
 
-func (c *Camera) Render(world hit.HitList,file string) {
+func (c *Camera) Render(world hit.HitList, file string) {
 	upLeft := image.Point{0, 0}
 	lowRight := image.Point{c.Width, c.Height}
 
@@ -93,11 +96,158 @@ func (c *Camera) Render(world hit.HitList,file string) {
 			}
 
 			color.DivScalar(float64(c.samples_per_pixel))
-			img.Set(i,j,color.ToIntArr())
+			img.Set(i, j, color.ToIntArr())
 		}
 	}
 
-	f, _ := os.Create("out/"+ file + ".png")
+	f, _ := os.Create("out/" + file + ".png")
+	defer f.Close()
+	png.Encode(f, img)
+	print("\rCompleted 100%")
+	println("\nDone")
+}
+
+type PixelCom struct {
+	I, J  int
+	Pixel color.RGBA
+}
+
+func RenderPixel(
+	c *Camera,
+	world *hit.HitList,
+	i, j int,
+	ch chan<- PixelCom,
+	wg *sync.WaitGroup,
+) {
+	defer wg.Done()
+
+	color := vec.New(0, 0, 0)
+	pixel_center := *vec.Add(
+		c.pixel00_loc,
+		*vec.MulScalar(c.pixel_delta_u, float64(i)),
+		*vec.MulScalar(c.pixel_delta_v, float64(j)),
+	)
+	for k := 0; k < c.samples_per_pixel; k++ {
+		sample := vec.Add(pixel_center, c.pixel_sample_sq())
+		ray_origin := vec.Add(
+			c.center,
+			*vec.MulScalar(c.defocus_disk_u, utils.Rand(-.5, .5)),
+			*vec.MulScalar(c.defocus_disk_v, utils.Rand(-.5, .5)),
+		)
+		direction := vec.Sub(*sample, *ray_origin)
+		r := *ray.New(*ray_origin, *direction)
+
+		color.Add(c.ray_color(&r, *world, c.max_depth))
+	}
+
+	color.DivScalar(float64(c.samples_per_pixel))
+
+	ch <- PixelCom{
+		I:     i,
+		J:     j,
+		Pixel: color.ToIntArr(),
+	}
+}
+
+func RenderRow(
+	c *Camera,
+	world *hit.HitList,
+	j int,
+	ch chan<- PixelCom,
+	wg *sync.WaitGroup,
+) {
+	defer wg.Done()
+
+	for i := 0; i < c.Width; i++ {
+		color := vec.New(0, 0, 0)
+		pixel_center := *vec.Add(
+			c.pixel00_loc,
+			*vec.MulScalar(c.pixel_delta_u, float64(i)),
+			*vec.MulScalar(c.pixel_delta_v, float64(j)),
+		)
+		for i := 0; i < c.samples_per_pixel; i++ {
+			sample := vec.Add(pixel_center, c.pixel_sample_sq())
+			ray_origin := vec.Add(
+				c.center,
+				*vec.MulScalar(c.defocus_disk_u, utils.Rand(-.5, .5)),
+				*vec.MulScalar(c.defocus_disk_v, utils.Rand(-.5, .5)),
+			)
+			direction := vec.Sub(*sample, *ray_origin)
+			r := *ray.New(*ray_origin, *direction)
+
+			color.Add(c.ray_color(&r, *world, c.max_depth))
+		}
+
+		color.DivScalar(float64(c.samples_per_pixel))
+
+		ch <- PixelCom{
+			I:     i,
+			J:     j,
+			Pixel: color.ToIntArr(),
+		}
+	}
+}
+
+func (c *Camera) RenderAsync(world hit.HitList, file string) {
+	upLeft := image.Point{0, 0}
+	lowRight := image.Point{c.Width, c.Height}
+
+	img := image.NewRGBA(image.Rectangle{upLeft, lowRight})
+	ch := make(chan PixelCom)
+	var wg sync.WaitGroup
+
+	for j := 0; j < c.Height; j++ {
+		print("\rCompleted ", j*100/c.Height, "%")
+		for i := 0; i < c.Width; i++ {
+			wg.Add(1)
+			go RenderPixel(c, &world, i, j, ch, &wg)
+		}
+	}
+
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	for res := range ch {
+		img.Set(res.I, res.J, res.Pixel)
+	}
+
+	f, _ := os.Create("out/" + file + ".png")
+	defer f.Close()
+	png.Encode(f, img)
+	print("\rCompleted 100%")
+	println("\nDone")
+}
+
+func (c *Camera) RenderRowAsync(world hit.HitList, file string) {
+	upLeft := image.Point{0, 0}
+	lowRight := image.Point{c.Width, c.Height}
+
+	img := image.NewRGBA(image.Rectangle{upLeft, lowRight})
+	ch := make(chan PixelCom)
+	var wg sync.WaitGroup
+
+	for j := 0; j < c.Height; j++ {
+		wg.Add(1)
+		go RenderRow(c, &world, j, ch, &wg)
+	}
+
+	go func() {
+		wg.Wait()
+		close(ch)
+	}()
+
+	count:=0
+	for res := range ch {
+		if count %400==0{
+			fmt.Printf("\rCompleted %d", (count*100)/(c.Height*c.Width))
+		}
+		img.Set(res.I, res.J, res.Pixel)
+		count++
+	}
+
+	f, _ := os.Create("out/" + file + ".png")
 	defer f.Close()
 	png.Encode(f, img)
 	print("\rCompleted 100%")

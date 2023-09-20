@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"math"
 	"math/rand"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"ray-tracing/texture"
 	"ray-tracing/utils"
 	"ray-tracing/vec"
+	"time"
 )
 
 func TestScene() {
@@ -27,7 +29,7 @@ func TestScene() {
 	cam := camera.New(
 		400,
 		16.0/9.0,
-		20,
+		100,
 		20,
 	)
 
@@ -101,7 +103,9 @@ func AwesomeScene() {
 		*vec.New(0, 1, 0),
 	)
 	println("Rendering ", len(world.Objects), "objects")
-	cam.Render(newWorld, "awesome")
+	// cam.Render(newWorld, "awesome")
+	cam.RenderAsync(newWorld, "awesome")
+	// cam.RenderRowAsync(newWorld, "awesome")
 }
 
 func CheckerSphereScene() {
@@ -343,7 +347,7 @@ func UltimateScene() {
 		100,
 		50,
 	)
-	cam.Background=*vec.BLACK
+	cam.Background = *vec.BLACK
 	cam.Adjust(
 		40,
 		*vec.New(478, 278, -600),
@@ -351,10 +355,11 @@ func UltimateScene() {
 		*vec.New(0, 1, 0),
 	)
 
-	cam.Render(world, "ultimate")
+	cam.RenderRowAsync(world, "ultimate")
 }
 
 func main() {
+	timer:=time.Now()
 	arg := os.Args[1]
 
 	switch arg {
@@ -377,4 +382,6 @@ func main() {
 	default:
 		println("Please provide scene")
 	}
+
+	fmt.Println("Time required: ",time.Since(timer))
 }
