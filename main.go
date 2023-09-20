@@ -202,8 +202,15 @@ func CornelScene() {
 	world.Add(hit.NewQuad(*vec.New(555, 555, 555), *vec.New(-555, 0, 0), *vec.New(0, 0, -555), white))
 	world.Add(hit.NewQuad(*vec.New(0, 0, 555), *vec.New(555, 0, 0), *vec.New(0, 555, 0), white))
 
-	world.Add(getBox(*vec.New(130, 0, 65), *vec.New(295, 165, 230), white))
-	world.Add(getBox(*vec.New(265, 0, 295), *vec.New(430, 330, 460), white))
+	box := getBox(*vec.New(0,0,0), *vec.New(165,330,165), white);
+    box1 := hit.NewRotateY(box, 15);
+    box11 := hit.NewTranslate(box1, *vec.New(265,0,295));
+    world.Add(box11);
+
+    box = getBox(*vec.New(0,0,0),* vec.New(165,165,165), white);
+    box2 := hit.NewRotateY(box, -18);
+    box22 := hit.NewTranslate(box2, *vec.New(130,0,65));
+    world.Add(box22);
 
 	cam := camera.New(
 		300,

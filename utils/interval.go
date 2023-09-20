@@ -1,6 +1,8 @@
 package utils
 
-import "math"
+import (
+	"math"
+)
 
 type Interval struct {
 	Min float64
@@ -14,6 +16,10 @@ func GroupInterval(a, b Interval) Interval {
 		Min: math.Min(a.Min, b.Min),
 		Max: math.Max(a.Max, b.Max),
 	}
+}
+
+func (itv Interval) TranslateInterval(off float64) Interval {
+	return NewInterval(itv.Min+off, itv.Max+off)
 }
 
 func (i *Interval) Contains(x float64) bool {

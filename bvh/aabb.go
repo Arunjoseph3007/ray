@@ -91,3 +91,11 @@ func (ab AABB) Pad() AABB {
 
 	return New(newX, newY, newZ)
 }
+
+func (ab AABB) Translate(vec vec.Vec3) AABB {
+	return New(
+		ab.X.TranslateInterval(vec.X()),
+		ab.Y.TranslateInterval(vec.Y()),
+		ab.Z.TranslateInterval(vec.Z()),
+	)
+}

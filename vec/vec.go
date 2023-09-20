@@ -36,6 +36,10 @@ func (v *Vec3) Get(n int) float64 {
 	return v.e[n]
 }
 
+func (v *Vec3) Set(n int,val float64) {
+	v.e[n]= val
+}
+
 func (v Vec3) Negative() *Vec3 {
 	return &Vec3{
 		e: [3]float64{-v.e[0], -v.e[1], -v.e[2]},
