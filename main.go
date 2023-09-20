@@ -38,7 +38,7 @@ func TestScene() {
 		*vec.New(0, 1, 0),
 	)
 
-	cam.Render(world,"test")
+	cam.Render(world, "test")
 }
 
 func AwesomeScene() {
@@ -151,7 +151,7 @@ func EarthScene() {
 		*vec.New(0, 1, 0),
 	)
 
-	cam.Render(world,"earth")
+	cam.Render(world, "earth")
 }
 
 func SimpleLightScene() {
@@ -176,7 +176,7 @@ func SimpleLightScene() {
 		100,
 	)
 
-	cam.Background = *vec.New(100/255,100/255,100/255)
+	cam.Background = *vec.New(100/255, 100/255, 100/255)
 
 	cam.Adjust(
 		30,
@@ -202,15 +202,15 @@ func CornelScene() {
 	world.Add(hit.NewQuad(*vec.New(555, 555, 555), *vec.New(-555, 0, 0), *vec.New(0, 0, -555), white))
 	world.Add(hit.NewQuad(*vec.New(0, 0, 555), *vec.New(555, 0, 0), *vec.New(0, 555, 0), white))
 
-	box := getBox(*vec.New(0,0,0), *vec.New(165,330,165), white);
-    box1 := hit.NewRotateY(box, 15);
-    box11 := hit.NewTranslate(box1, *vec.New(265,0,295));
-    world.Add(box11);
+	box := getBox(*vec.New(0, 0, 0), *vec.New(165, 330, 165), white)
+	box1 := hit.NewRotateY(box, 15)
+	box11 := hit.NewTranslate(box1, *vec.New(265, 0, 295))
+	world.Add(box11)
 
-    box = getBox(*vec.New(0,0,0),* vec.New(165,165,165), white);
-    box2 := hit.NewRotateY(box, -18);
-    box22 := hit.NewTranslate(box2, *vec.New(130,0,65));
-    world.Add(box22);
+	box = getBox(*vec.New(0, 0, 0), *vec.New(165, 165, 165), white)
+	box2 := hit.NewRotateY(box, -18)
+	box22 := hit.NewTranslate(box2, *vec.New(130, 0, 65))
+	world.Add(box22)
 
 	cam := camera.New(
 		300,
@@ -284,6 +284,76 @@ func QuadsScene() {
 	cam.Render(world, "quad")
 }
 
+func UltimateScene() {
+	boxes1 := hit.NewHitList()
+	ground := hit.NewLambertianFromColor(*vec.New(0.48, 0.83, 0.53))
+
+	boxes_per_side := 20
+	for i := 0; i < boxes_per_side; i++ {
+		for j := 0; j < boxes_per_side; j++ {
+			w := 100.0
+			x0 := -1000.0 + float64(i)*w
+			z0 := -1000.0 + float64(j)*w
+			y0 := 0.0
+			x1 := x0 + w
+			y1 := rand.Float64()*100 + 1
+			z1 := z0 + w
+
+			boxes1.Add(getBox(*vec.New(x0, y0, z0), *vec.New(x1, y1, z1), ground))
+		}
+	}
+
+	world := hit.NewHitList()
+	groundNode := hit.NodeFromHitables(boxes1.Objects)
+	world.Add(groundNode)
+
+	light := hit.NewLightFromColor(*vec.New(7, 7, 7))
+	world.Add(hit.NewQuad(*vec.New(123, 554, 147), *vec.New(300, 0, 0), *vec.New(0, 0, 265), light))
+
+	world.Add(hit.NewSphere(*vec.New(260, 150, 45), 50, &hit.Dielectric{RefractIndex: 1.5}))
+	world.Add(hit.NewSphere(
+		*vec.New(0, 150, 145), 50, &hit.Metal{Albedo: *vec.New(0.8, 0.8, 0.9), Fuzz: 1.0},
+	))
+
+	boundary := hit.NewSphere(*vec.New(360, 150, 145), 70, &hit.Dielectric{RefractIndex: .5})
+	world.Add(boundary)
+
+	emat := hit.NewLambertianFromtexture(texture.NewImageTexture("assets/earthmap.png"))
+	world.Add(hit.NewSphere(*vec.New(400, 200, 400), 100, emat))
+
+	boxes2 := hit.NewHitList()
+	white := hit.NewLambertianFromColor(*vec.New(.73, .73, .73))
+	ns := 1000
+	for j := 0; j < ns; j++ {
+		boxes2.Add(hit.NewSphere(vec.Random(0, 165), 10, white))
+	}
+	world.Add(
+		hit.NewTranslate(
+			hit.NewRotateY(
+				hit.NodeFromHitables(boxes2.Objects),
+				10,
+			),
+			*vec.New(-100, 270, 395),
+		),
+	)
+
+	cam := camera.New(
+		400,
+		1,
+		100,
+		50,
+	)
+	cam.Background=*vec.BLACK
+	cam.Adjust(
+		40,
+		*vec.New(478, 278, -600),
+		*vec.New(278, 278, 0),
+		*vec.New(0, 1, 0),
+	)
+
+	cam.Render(world, "ultimate")
+}
+
 func main() {
 	arg := os.Args[1]
 
@@ -302,6 +372,8 @@ func main() {
 		QuadsScene()
 	case "cornel":
 		CornelScene()
+	case "ultimate":
+		UltimateScene()
 	default:
 		println("Please provide scene")
 	}
